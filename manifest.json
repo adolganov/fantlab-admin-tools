@@ -1,0 +1,15 @@
+{
+    "manifest_version": 2,
+
+    "name": "Fantlab Admin Tools",
+    "description": "Инструменты для админов Фантлаба",
+    "version": "0.1",
+
+    "content_scripts": [
+        {
+            "matches": ["*://*.fantlab.ru/search*"],
+            "js": ["libs/clipboard.min.js", "libs/jquery-2.2.2.min.js", "fantlab/search.js"],
+            "css": ["fantlab/search.css"]
+        }
+    ]
+}
