@@ -10,6 +10,28 @@
             "matches": ["*://*.fantlab.ru/search*"],
             "js": ["libs/clipboard.min.js", "libs/jquery-2.2.2.min.js", "fantlab/search.js"],
             "css": ["fantlab/search.css"]
+        },
+        {
+            "matches": ["*://*.comicbookdb.com/issue.php*"],
+            "js": ["comicbookdb/import-comics.js", "libs/jquery-2.2.2.min.js"]
+        },
+        {
+            "matches": ["*://*.fantlab.ru/autor*/addwork"],
+            "js": ["libs/jquery-2.2.2.min.js", "fantlab/add-work.js"]
         }
+    ],
+
+    "page_action": {
+        "default_title": "Import comics from comicbookdb",
+        "default_icon": "fl.png"
+    },
+
+    "background": {
+        "scripts": ["eventPage.js"],
+        "persistent": false
+    },
+
+    "permissions": [
+        "tabs"
     ]
 }
