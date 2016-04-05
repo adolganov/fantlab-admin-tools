@@ -13,7 +13,8 @@
         },
         {
             "matches": ["*://*.comicbookdb.com/issue.php*"],
-            "js": ["comicbookdb/import-comics.js", "libs/jquery-2.2.2.min.js"]
+            "js": ["libs/jquery-2.2.2.min.js", "libs/jquery-ui.min.js", "comicbookdb/import-comics.js"],
+            "css": ["libs/jquery-ui.min.css", "comicbookdb/dialog.css"]
         },
         {
             "matches": ["*://*.fantlab.ru/autor*/addwork"],
@@ -30,6 +31,14 @@
         "scripts": ["eventPage.js"],
         "persistent": false
     },
+
+    "web_accessible_resources": [
+        "libs/images/ui-bg_glass_75_e6e6e6_1x400.png",
+        "libs/images/ui-bg_highlight-soft_75_cccccc_1x100.png",
+        "libs/images/ui-icons_222222_256x240.png",
+        "libs/images/ui-bg_glass_75_dadada_1x400.png",
+        "libs/images/ui-bg_glass_65_ffffff_1x400.png"
+    ],
 
     "permissions": [
         "tabs"

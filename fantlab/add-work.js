@@ -1,18 +1,18 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.action == "fillComics") {
         sendResponse({ack: true});
-        console.log("fill comics");
+
         $("#worktypeid").val(41);
         $("#spanarts").css("display", "");
 
-        if(request.writers.found.length > 1) {
-            $.each(request.writers.found.slice(1), function(index, value) {
-                $("input[name='autor" + String(index + 2) + "id']").val(value);
+        if(request.comics.writer.length > 1) {
+            $.each(request.comics.writer.slice(1), function(index, value) {
+                $("input[name='autor" + String(index + 2) + "id']").val(request.writers[value] + " (" + value + ")");
             });
         }
 
-        $.each(request.artists.found, function(index, value) {
-            $("input[name='art" + (index > 0 ? String(index + 1) : "") + "id']").val(value);
+        $.each(request.comics.penciller, function(index, value) {
+            $("input[name='art" + (index > 0 ? String(index + 1) : "") + "id']").val(request.artists[value] + " (" + value + ")");
         });
 
         $("input[name='name']").val(

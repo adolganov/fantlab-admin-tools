@@ -20,7 +20,6 @@ function parsePage() {
 
     //find ids for writers and pencillers
     var writers = {
-        found: [],
         not_found: []
     };
 
@@ -29,7 +28,8 @@ function parsePage() {
         var ents = data.split(/,\s*/);
         $.each(ents, function(index, val) {
             if (val.startsWith("[")) {
-                writers.found.push(/\[autor=(\d+)\]/.exec(val)[1]);
+                var res = /\[autor=(\d+)\](.+)\[/.exec(val);
+                writers[res[2]] = res[1];
             } else {
                 writers.not_found.push(val);
             }
@@ -37,7 +37,6 @@ function parsePage() {
     }));
 
     var artists = {
-        found: [],
         not_found: []
     };
     $.each(comicsInfo.penciller, function(index, value) {
@@ -45,15 +44,71 @@ function parsePage() {
         defs.push($.get("https://fantlab.ru/search-mini-art", {searchq: art}, function(data) {
             var links = $(".search-result_left a", data);
             if (links.length == 1) {
-                artists.found.push(/importStrArts\(\'(\d+)\'/.exec(links.attr("onClick"))[1]);
+                var res = /importStrArts\(\'(\d+)\'/.exec(links.attr("onClick"))[1];
+                artists[value] = res;
             } else {
-                artists.not_found.push(art);
+                artists.not_found.push(value);
             }
         }));
     });
 
     $.when.apply($, defs).then(function( data, textStatus, jqXHR ) {
-        chrome.runtime.sendMessage({action: "fillComics", comics: comicsInfo, writers: writers, artists: artists});
+        if (artists.not_found.length > 0 || writers.not_found.length > 0) {
+            var dlg = $("<div id='fantlab-dlg'/>");
+            if (writers.not_found.length > 0) {
+                dlg.append("<h1>Авторы:</h1>");
+                var wList = $("<ul/>");
+                $.each(writers.not_found, function (idx, value) {
+                    wList.append("<li><label for='aut" + idx + "'>" + value + "</label> <input type='text' id='aut" + idx + "' data='" + value + "'/>");
+                });
+                dlg.append(wList);
+            }
+            if (artists.not_found.length > 0) {
+                dlg.append("<h1>Художники:</h1>");
+                var aList = $("<ul/>");
+                $.each(artists.not_found, function (idx, value) {
+                    aList.append("<li><label for='art" + idx + "'>" + value + "</label> <input type='text' id='art" + idx + "' data='" + value + "'/>");
+                });
+                dlg.append(aList);
+            }
+
+            dlg.dialog({
+                title: "Укажите id",
+                modal: true,
+                dialogClass: "no-close",
+                buttons: {
+                    "OK": function() {
+                        var auts = {};
+                        var arts = {};
+                        var valid = true;
+                        dlg.find("input").each(function(idx) {
+                            var val = $(this).val().trim();
+                            if (val.length > 0) {
+                                if ($(this)[0].id.startsWith("art")) {
+                                    arts[$(this).attr("data")] = val;
+                                } else {
+                                    auts[$(this).attr("data")] = val;
+                                }
+                            } else {
+                                valid = false;
+                            }
+                        });
+
+                        if (valid) {
+                            $.extend(writers, auts);
+                            $.extend(artists, arts);
+                            writers.not_found = [];
+                            artists.not_found = [];
+
+                            $(this).dialog("close");
+                            chrome.runtime.sendMessage({action: "fillComics", comics: comicsInfo, writers: writers, artists: artists});
+                        }
+                    }
+                }
+            });
+        } else {
+            chrome.runtime.sendMessage({action: "fillComics", comics: comicsInfo, writers: writers, artists: artists});
+        }
     });
 };
 
