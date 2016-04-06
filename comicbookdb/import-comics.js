@@ -40,8 +40,7 @@ function parsePage() {
         not_found: []
     };
     $.each(comicsInfo.penciller, function(index, value) {
-        var art = value.split(" - ")[0];
-        defs.push($.get("https://fantlab.ru/search-mini-art", {searchq: art}, function(data) {
+        defs.push($.get("https://fantlab.ru/search-mini-art", {searchq: value}, function(data) {
             var links = $(".search-result_left a", data);
             if (links.length == 1) {
                 var res = /importStrArts\(\'(\d+)\'/.exec(links.attr("onClick"))[1];
@@ -116,7 +115,7 @@ function extractCreators(header, comicsInfo) {
     var type = /(\w+)\(/.exec(header.text())[1].toLowerCase();
     var creators = [];
     header.nextUntil("strong", "a").each(function(index) {
-        creators.push($(this).text());
+        creators.push($(this).text().split(" - ")[0].replace(/\s'[^']+'\s/gi, " "));
     });
 
     comicsInfo[type] = creators;
