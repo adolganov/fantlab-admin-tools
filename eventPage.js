@@ -1,7 +1,5 @@
 chrome.runtime.onMessage.addListener(function(request, sender, response) {
-    if (request.action == "show") {
-        chrome.pageAction.show(sender.tab.id);
-    } else if (request.action == "fillComics") {
+    if (request.action == "fillComics") {
         if (request.writers.not_found.length > 0 || request.artists.not_found.length > 0) {
 
         } else {
@@ -11,14 +9,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, response) {
             );
         }
     }
-});
-
-chrome.pageAction.onClicked.addListener(function(tab) {
-    chrome.tabs.sendMessage(tab.id, {action: "run"});
-});
-
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-    console.log(tabId + " / " + changeInfo.status);
 });
 
 function createTabAndSendMessage(url, msg) {

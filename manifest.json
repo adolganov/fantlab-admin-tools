@@ -4,6 +4,9 @@
     "name": "Fantlab Admin Tools",
     "description": "Инструменты для админов Фантлаба",
     "version": "0.1",
+    "icons": {
+        "16": "fl.png"
+    },
 
     "content_scripts": [
         {
@@ -22,17 +25,13 @@
         }
     ],
 
-    "page_action": {
-        "default_title": "Import comics from comicbookdb",
-        "default_icon": "fl.png"
-    },
-
     "background": {
         "scripts": ["eventPage.js"],
         "persistent": false
     },
 
     "web_accessible_resources": [
+        "fl.png",
         "libs/images/ui-bg_glass_75_e6e6e6_1x400.png",
         "libs/images/ui-bg_highlight-soft_75_cccccc_1x100.png",
         "libs/images/ui-icons_222222_256x240.png",

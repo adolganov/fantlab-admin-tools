@@ -129,10 +129,9 @@ function extractCreators(header, comicsInfo) {
     }
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-    if (request.action == "run") {
+$(function() {
+    $(".page_headline").after(" <button id='fl-import'><img src='"+ chrome.runtime.getURL("fl.png") + "'/></button>");
+    $("#fl-import").click(function() {
         parsePage();
-    }
+    });
 });
-
-chrome.runtime.sendMessage({action: "show"});
