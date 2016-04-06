@@ -18,13 +18,32 @@ function parsePage() {
     comicsInfo.year = date.getFullYear();
     comicsInfo.month = date.getMonth() + 1;
 
+    comicsInfo.stories = [];
+    //Multiple stories
+    $("a[href^='issue_story_edit']").prev().each(function(idx) {
+        var story = {};
+        story.title = $(this).find("strong").text().slice(1, -1);
+        extractCreators($(this).nextAll("strong").slice(1).first(), story);
+
+        comicsInfo.stories.push(story);
+    });
+
     //find ids for writers and pencillers
+    var writersList = allCreators(comicsInfo, "writer");
+    if (!comicsInfo.writer) {
+        $.each(comicsInfo.editor, function(idx, value) {
+            if (writersList.indexOf(value) == -1) {
+                writersList.push(value);
+            }
+        });
+        writersList = writersList.concat(comicsInfo.editor);
+    }
     var writers = {
         not_found: []
     };
 
     var defs = [];
-    defs.push($.get("https://fantlab.ru/getautorstag/", {getautors: comicsInfo.writer.join(",")}, function(data) {
+    defs.push($.get("https://fantlab.ru/getautorstag/", {getautors: writersList.join(",")}, function(data) {
         var ents = data.split(/,\s*/);
         $.each(ents, function(index, val) {
             if (val.startsWith("[")) {
@@ -39,7 +58,7 @@ function parsePage() {
     var artists = {
         not_found: []
     };
-    $.each(comicsInfo.penciller, function(index, value) {
+    $.each(allCreators(comicsInfo, "penciller"), function(index, value) {
         defs.push($.get("https://fantlab.ru/search-mini-art", {searchq: value}, function(data) {
             var links = $(".search-result_left a", data);
             if (links.length == 1) {
@@ -121,11 +140,29 @@ function extractCreators(header, comicsInfo) {
     comicsInfo[type] = creators;
 
     var nextHeader = header.nextAll("strong").first();
-    if (nextHeader.length > 0) {
+    if (nextHeader.length > 0 && !nextHeader.text().startsWith("Character")) {
         return extractCreators(nextHeader, comicsInfo);
     } else {
         return comicsInfo;
     }
+}
+
+
+function allCreators(comicsInfo, creatorType) {
+    function distinct(array) {
+        return array.filter(function(itm,i,a) {
+            return i == a.indexOf(itm);
+        });
+    }
+
+    var creatorsList = comicsInfo[creatorType] ? comicsInfo[creatorType] : [];
+    $.each(comicsInfo.stories, function (idx, value) {
+        if (value[creatorType]) {
+            creatorsList = creatorsList.concat(value[creatorType]);
+        }
+    });
+
+    return distinct(creatorsList);
 }
 
 $(function() {

@@ -1,13 +1,36 @@
 chrome.runtime.onMessage.addListener(function(request, sender, response) {
     if (request.action == "fillComics") {
-        if (request.writers.not_found.length > 0 || request.artists.not_found.length > 0) {
+        var msg = request;
 
-        } else {
-            createTabAndSendMessage(
-                {url: "https://fantlab.ru/autor" + request.writers[request.comics.writer[0]] + "/addwork"},
-                request
-            );
+        if (request.comics.stories.length > 0) {
+            var storiesAdded = 0;
+            request.comics.stories.forEach(function(story) {
+                if (story.writer && story.writer.length > 0) {
+                    story.series = request.comics.series;
+                    story.year = request.comics.year;
+                    story.month = request.comics.month;
+                    story.num = "";
+
+                    storiesAdded++;
+                    createTabAndSendMessage(
+                        {url: "https://fantlab.ru/autor" + request.writers[story.writer[0]] + "/addwork"},
+                        {action: "fillComics", comics: story, writers: request.writers, artists: request.artists}
+                    );
+                }
+            });
+
+            if (storiesAdded > 0) {
+                if (!request.comics.writer || request.comics.writer.length == 0) {
+                    request.comics.writer = request.comics.editor;
+                }
+                msg = {action: "fillCollection", comics: request.comics, writers: request.writers, artists: request.artists};
+            }
         }
+
+        createTabAndSendMessage(
+            {url: "https://fantlab.ru/autor" + request.writers[request.comics.writer[0]] + "/addwork"},
+            msg
+        );
     }
 });
 
