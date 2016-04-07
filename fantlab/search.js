@@ -1,6 +1,7 @@
 $(function () {
     $(".search-results a")
-        .not("a:has(img)")
+        .not("div.cover a")
+        .not("div.live a")
         .not(".more-link-block a")
         .filter(function(index) { return this.text.trim().length > 0; })
         .after(function() {
