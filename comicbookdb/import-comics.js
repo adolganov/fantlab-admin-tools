@@ -23,7 +23,7 @@ function parsePage() {
     $("a[href^='issue_story_edit']").prev().each(function(idx) {
         var story = {};
         story.title = $(this).find("strong").text().slice(1, -1);
-        extractCreators($(this).nextAll("strong").slice(1).first(), story);
+        extractCreators($(this).nextAll("strong").eq(1), story);
 
         comicsInfo.stories.push(story);
     });
@@ -36,7 +36,6 @@ function parsePage() {
                 writersList.push(value);
             }
         });
-        writersList = writersList.concat(comicsInfo.editor);
     }
     var writers = {
         not_found: []
@@ -134,7 +133,7 @@ function extractCreators(header, comicsInfo) {
     var type = /(\w+)\(/.exec(header.text())[1].toLowerCase();
     var creators = [];
     header.nextUntil("strong", "a").each(function(index) {
-        creators.push($(this).text().split(" - ")[0].replace(/\s'[^']+'\s/gi, " "));
+        creators.push($(this).text().split(" - ")[0].replace(/\s["'][^'"]+['"]\s/gi, " "));
     });
 
     comicsInfo[type] = creators;
