@@ -2,9 +2,8 @@ $(function() {
     var headerRow = $("u a:contains('Issue')").parents("tr").first();
     headerRow.prepend("<td><input type='checkbox' id='headerCB'/></td>");
 
-    headerRow.next("tr").prepend("<td><input type='checkbox' class='issueCB'/></td>");
-    headerRow.parent().siblings("tbody:visible").find("tr").prepend("<td><input type='checkbox' class='issueCB'/></td>");
-    headerRow.parent().siblings("tbody:hidden").find("tr").prepend("<td></td>");
+    headerRow.closest("table").find("tr:visible").slice(1).prepend("<td><input type='checkbox' class='issueCB'/></td>");
+    headerRow.closest("table").find("tr:hidden").prepend("<td></td>");
 
     $("#headerCB").click(function() {
         $(".issueCB").prop("checked", $(this).prop("checked"));
