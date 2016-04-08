@@ -1,36 +1,38 @@
 chrome.runtime.onMessage.addListener(function(request, sender, response) {
     if (request.action == "fillComics") {
-        var msg = request;
+        request.comics.forEach(function(comic) {
+            var msg = {action: "fillComics", comics: comic, writers: request.writers, artists: request.artists};
 
-        if (request.comics.stories.length > 0) {
-            var storiesAdded = 0;
-            request.comics.stories.forEach(function(story) {
-                if (story.writer && story.writer.length > 0) {
-                    story.series = request.comics.series;
-                    story.year = request.comics.year;
-                    story.month = request.comics.month;
-                    story.num = "";
+            if (comic.stories.length > 0) {
+                var storiesAdded = 0;
+                comic.stories.forEach(function(story) {
+                    if (story.writer && story.writer.length > 0) {
+                        story.series = comic.series;
+                        story.year = comic.year;
+                        story.month = comic.month;
+                        story.num = "";
 
-                    storiesAdded++;
-                    createTabAndSendMessage(
-                        {url: "https://fantlab.ru/autor" + request.writers[story.writer[0]] + "/addwork"},
-                        {action: "fillComics", comics: story, writers: request.writers, artists: request.artists}
-                    );
+                        storiesAdded++;
+                        createTabAndSendMessage(
+                            {url: "https://fantlab.ru/autor" + request.writers[story.writer[0]] + "/addwork"},
+                            {action: "fillComics", comics: story, writers: request.writers, artists: request.artists}
+                        );
+                    }
+                });
+
+                if (storiesAdded > 0) {
+                    if (!comic.writer || comic.writer.length == 0) {
+                        comic.writer = comic.editor;
+                    }
+                    msg.action = "fillCollection";
                 }
-            });
-
-            if (storiesAdded > 0) {
-                if (!request.comics.writer || request.comics.writer.length == 0) {
-                    request.comics.writer = request.comics.editor;
-                }
-                msg = {action: "fillCollection", comics: request.comics, writers: request.writers, artists: request.artists};
             }
-        }
 
-        createTabAndSendMessage(
-            {url: "https://fantlab.ru/autor" + request.writers[request.comics.writer[0]] + "/addwork"},
-            msg
-        );
+            createTabAndSendMessage(
+                {url: "https://fantlab.ru/autor" + request.writers[comic.writer[0]] + "/addwork"},
+                msg
+            );
+        });
     }
 });
 
