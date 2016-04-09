@@ -14,9 +14,17 @@ $(function() {
         var comics = [];
         var pages = [];
         $(".issueCB:checked").parent().next("td").find("a.page_link").each(function() {
-            pages.push($.get($(this).get(0).href, function(data) {
-                comics.push(parsePage($("<div/>").append(data)));
-            }));
+            pages.push(
+                $.get({
+                    url: $(this).get(0).href,
+                    beforeSend: function(xhr) {
+                        xhr.overrideMimeType('text/html; charset=windows-1252');
+                    },
+                    success: function(data) {
+                        comics.push(parsePage($("<div/>").append(data)));
+                    }
+                })
+            );
         });
 
         $.when.apply($, pages).then(function() {
