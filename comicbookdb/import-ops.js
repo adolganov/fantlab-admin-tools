@@ -96,7 +96,9 @@ function findCreatorIdsAndRun(comics) {
                 dlg.append("<h1>Художники:</h1>");
                 var aList = $("<ul/>");
                 $.each(artists.not_found, function (idx, value) {
-                    aList.append("<li><label for='art" + idx + "'>" + value + "</label> <input type='text' id='art" + idx + "' data='" + value + "'/>");
+                    aList.append("<li><label for='art" + idx + "'>" + value +
+                                 " <input type='text' id='art" + idx +
+                                 "' size=7 data='" + value + "'/></label>");
                 });
                 dlg.append(aList);
             }
