@@ -30,7 +30,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, response) {
 
                 if (storiesAdded > 0) {
                     if (!hasWriter) {
-                        comic.writer = comic.editor;
+                        if (comic.editor && comic.editor.length > 0) {
+                            comic.writer = comic.editor;
+                        } else {
+                            comic.writer = ["AnonymousEditor"];
+                            request.writers.AnonymousEditor = 2000;
+                        }
                         msg.action = "fillAnthology";
                     } else {
                         msg.action = "fillCollection";
