@@ -28,8 +28,9 @@ $(function() {
         });
 
         $.when.apply($, pages).then(function() {
-            console.log(comics);
-            findCreatorIdsAndRun(comics);
+            if(comics.length > 0) {
+                findCreatorIdsAndRun(comics);
+            }
         });
     });
 });
