@@ -1,5 +1,4 @@
 function parsePage(html) {
-    console.log(html);
     var comicsInfo = {};
 
     var headline = html.find(".page_headline");

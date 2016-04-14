@@ -2,11 +2,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, response) {
     if (request.action == "fillComics") {
         request.comics.forEach(function(comic) {
             var msg = {action: "fillComics", comics: comic, writers: request.writers, artists: request.artists};
+            var hasWriter = comic.writer && comic.writer.length > 0;
 
             if (comic.stories.length > 0) {
                 var storiesAdded = 0;
                 comic.stories.forEach(function(story) {
-                    if (story.writer && story.writer.length > 0) {
+
+                    if (hasWriter || (story.writer && story.writer.length > 0)) {
+                        if(!story.writer || story.writer.length == 0) {
+                            story.writer = comic.writer;
+                        }
                         story.series = comic.series;
                         story.year = comic.year;
                         story.month = comic.month;
@@ -21,10 +26,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, response) {
                 });
 
                 if (storiesAdded > 0) {
-                    if (!comic.writer || comic.writer.length == 0) {
+                    if (!hasWriter) {
                         comic.writer = comic.editor;
+                        msg.action = "fillAnthology";
+                    } else {
+                        msg.action = "fillCollection";
                     }
-                    msg.action = "fillCollection";
                 }
             }
 

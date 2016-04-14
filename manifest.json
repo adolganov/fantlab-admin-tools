@@ -3,7 +3,7 @@
 
     "name": "Fantlab Admin Tools",
     "description": "Инструменты для админов Фантлаба",
-    "version": "0.2",
+    "version": "0.2.1",
     "icons": {
         "16": "fl.png"
     },

@@ -12,10 +12,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         });
     }
 
-    if (request.action === "fillCollection") {
+    if (request.action === "fillAnthology") {
         sendResponse({ack: true});
 
         $("#worktypeid").val(17);
+        fillInfo(request);
+    }
+
+    if (request.action === "fillCollection") {
+        sendResponse({ack: true});
+
+        $("#worktypeid").val(3);
         fillInfo(request);
     }
 });
