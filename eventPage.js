@@ -1,5 +1,6 @@
 chrome.runtime.onMessage.addListener(function(request, sender, response) {
     if (request.action == "fillComics") {
+        var cnt = 0;
         request.comics.forEach(function(comic) {
             var msg = {action: "fillComics", comics: comic, writers: request.writers, artists: request.artists};
             var hasWriter = comic.writer && comic.writer.length > 0;
@@ -18,10 +19,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, response) {
                         story.num = "";
 
                         storiesAdded++;
-                        createTabAndSendMessage(
+                        waitThenCreateTabAndSendMessage(
                             {url: "https://fantlab.ru/autor" + request.writers[story.writer[0]] + "/addwork"},
-                            {action: "fillComics", comics: story, writers: request.writers, artists: request.artists}
+                            {action: "fillComics", comics: story, writers: request.writers, artists: request.artists},
+                            cnt
                         );
+                        cnt++;
                     }
                 });
 
@@ -35,10 +38,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, response) {
                 }
             }
 
-            createTabAndSendMessage(
+            waitThenCreateTabAndSendMessage(
                 {url: "https://fantlab.ru/autor" + request.writers[comic.writer[0]] + "/addwork"},
-                msg
+                msg,
+                cnt
             );
+            cnt++;
         });
     }
 });
@@ -58,4 +63,8 @@ function createTabAndSendMessage(url, msg) {
                 chrome.tabs.onUpdated.removeListener(handler);
         });
     });
+}
+
+function waitThenCreateTabAndSendMessage(url, msg, delay) {
+    setTimeout(createTabAndSendMessage, delay * 200, url, msg);
 }
