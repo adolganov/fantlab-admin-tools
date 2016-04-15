@@ -17,10 +17,16 @@ $(function() {
             var ul = dlg.find("ul");
             issues.each(function() {
                 var titles = $(this).closest("tr").find("a").not("a:has(img)");
-                var title = titles.first().text().length > 0 ? titles.first().text() : titles.eq(1).text();
+                var ruTitle = titles.first().text();
+                var enTitle = titles.eq(1).text();
+                var title = ruTitle.length > 0 ? ruTitle : enTitle;
                 var id = /\d+/.exec(titles.first().attr("href"))[0];
-                var num = /[#№](\d+)/.exec(titles.first().text());
-                num = num ? num[1] : /[#№](\d+)/.exec(titles.eq(1).text())[1];
+
+                var num = /[#№](\d+)/.exec(enTitle);
+                if (!num) {
+                    num = /[#№](\d+)/.exec(ruTitle);
+                }
+                num = num ? num[1] : "";
 
                 ul.append("<li><label for='" + id + "'>" + title +
                           " <input type='text' id='" + id + "' size=4 value='" +
