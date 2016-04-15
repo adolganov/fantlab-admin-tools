@@ -41,20 +41,24 @@ $(function() {
                     "OK": function () {
                         var cycleId = dlg.find("#cycle-id").val();
                         if (cycleId && cycleId.trim().length > 0) {
-                            var url = "/work" + cycleId.trim() + "/work" + cycleId.trim() + "content/addworklink/addworklinkok";
-                            var defs = [];
-                            var i = 0;
-                            dlg.find("li input").each(function() {
-                                var self = this;
-                                setTimeout(function () {
-                                    defs.push($.post(url, {workid: $(self).attr("id"), index: $(self).val().trim()}));
-                                }, 100 * i);
-                                i++;
-                            });
+                            chrome.storage.sync.get({intervalTime: 200}, function(items) {
+                                var interval = Number(items.intervalTime);
+                                var i = 0;
+                                var url = "/work" + cycleId.trim() + "/work" + cycleId.trim() + "content/addworklink/addworklinkok";
+                                var defs = [];
 
-                            var self = this;
-                            $.when.apply(this, defs).then(function() {
-                                $(self).dialog("close");
+                                dlg.find("li input").each(function() {
+                                    var self = this;
+                                    setTimeout(function () {
+                                        defs.push($.post(url, {workid: $(self).attr("id"), index: $(self).val().trim()}));
+                                    }, interval * i);
+                                    i++;
+                                });
+
+                                var self = this;
+                                $.when.apply(this, defs).then(function() {
+                                    $(self).dialog("close");
+                                });
                             });
                         }
                     }
