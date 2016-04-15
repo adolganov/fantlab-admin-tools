@@ -2,7 +2,13 @@ $(function() {
     var headerRow = $("u a:contains('Issue')").parents("tr").first();
     headerRow.prepend("<td><input type='checkbox' id='headerCB'/></td>");
 
-    headerRow.closest("table").find("tr:visible").slice(1).prepend("<td><input type='checkbox' class='issueCB'/></td>");
+    headerRow.closest("table").find("tr:visible").slice(1).prepend(function() {
+        if ($(this).has("a.page_link").length) {
+            return "<td><input type='checkbox' class='issueCB'/></td>";
+        } else {
+            return "<td></td>";
+        }
+    });
     headerRow.closest("table").find("tr:hidden").prepend("<td></td>");
 
     $("#headerCB").click(function() {
