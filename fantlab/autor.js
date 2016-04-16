@@ -39,26 +39,25 @@ $(function() {
                 dialogClass: "no-close",
                 buttons: {
                     "OK": function () {
+                        var self = this;
                         var cycleId = dlg.find("#cycle-id").val();
                         if (cycleId && cycleId.trim().length > 0) {
                             chrome.storage.sync.get({intervalTime: 200}, function(items) {
                                 var interval = Number(items.intervalTime);
-                                var i = 0;
                                 var url = "/work" + cycleId.trim() + "/work" + cycleId.trim() + "content/addworklink/addworklinkok";
-                                var defs = [];
 
-                                dlg.find("li input").each(function() {
-                                    var self = this;
-                                    setTimeout(function () {
-                                        defs.push($.post(url, {workid: $(self).attr("id"), index: $(self).val().trim()}));
-                                    }, interval * i);
-                                    i++;
-                                });
-
-                                var self = this;
-                                $.when.apply(this, defs).then(function() {
-                                    $(self).dialog("close");
-                                });
+                                var lis = dlg.find("li input");
+                                function postLi(idx) {
+                                    if (idx < lis.length) {
+                                        $.post(url, {workid: lis[idx].id, index: lis[idx].value.trim()})
+                                            .always(function() {
+                                                setTimeout(postLi, interval, idx + 1);
+                                            });
+                                    } else {
+                                        $(self).dialog("close");
+                                    }
+                                }
+                                postLi(0);
                             });
                         }
                     }
