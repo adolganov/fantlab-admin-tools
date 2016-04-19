@@ -16,6 +16,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, response) {
                             if(!story.writer || story.writer.length == 0) {
                                 story.writer = comic.writer;
                             }
+
+                            if(!story.penciller || story.penciller.length == 0) {
+                                story.penciller = comic.penciller;
+                            }
+
                             story.series = comic.series;
                             story.year = comic.year;
                             story.month = comic.month;

@@ -143,6 +143,10 @@ function findCreatorIdsAndRun(comics) {
 }
 
 function extractCreators(header, comicsInfo) {
+    if (header.length == 0 || header.text().startsWith("Character")) {
+        return comicsInfo;
+    }
+
     var type = /(\w+)\(/.exec(header.text())[1].toLowerCase();
     var creators = [];
     header.nextUntil("strong", "a").each(function(index) {
@@ -151,12 +155,7 @@ function extractCreators(header, comicsInfo) {
 
     comicsInfo[type] = creators;
 
-    var nextHeader = header.nextAll("strong").first();
-    if (nextHeader.length > 0 && !nextHeader.text().startsWith("Character")) {
-        return extractCreators(nextHeader, comicsInfo);
-    } else {
-        return comicsInfo;
-    }
+    return extractCreators(header.nextAll("strong").first(), comicsInfo);
 }
 
 
