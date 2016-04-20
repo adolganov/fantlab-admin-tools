@@ -31,6 +31,48 @@ function parsePage(html) {
     return comicsInfo;
 }
 
+function findWritersIds(writersList, writersIds) {
+    return $.get("https://fantlab.ru/getautorstag/", {getautors: writersList.join(",")}, function(data) {
+        var ents = data.split(/,\s*/);
+        $.each(ents, function(index, val) {
+            if (val.startsWith("[")) {
+                var res = /\[autor=(\d+)\](.+)\[/.exec(val);
+                writersIds[res[2]] = res[1];
+            } else {
+                writersIds.not_found.push(val);
+            }
+        });
+    }).promise();
+}
+
+function findArtistsIds(artistsList, artistsIds, interval) {
+    var dfrd = $.Deferred();
+    function getArtistId(idx) {
+        if (idx < artistsList.length) {
+            var value = artistsList[idx];
+            $.get("https://fantlab.ru/search-mini-art", {searchq: value})
+                .done(function(data) {
+                    var links = $(".search-result_left a", data);
+                    if (links.length == 1) {
+                        var res = /importStrArts\(\'(\d+)\'/.exec(links.attr("onClick"))[1];
+                        artistsIds[value] = res;
+                    } else {
+                        artistsIds.not_found.push(value);
+                    }
+
+                    setTimeout(getArtistId, interval, idx + 1);
+                })
+                .fail(function() {
+                    dfrd.reject();
+                });
+        } else {
+            dfrd.resolve();
+        }
+    }
+    setTimeout(getArtistId, interval, 0);
+    return dfrd.promise();
+}
+
 function findCreatorIdsAndRun(comics) {
     if (!$.isArray(comics)) comics = [comics];
 
@@ -48,97 +90,78 @@ function findCreatorIdsAndRun(comics) {
     writersList = distinct(writersList);
     artistsList = distinct(artistsList);
 
-    var writers = {
-        not_found: []
-    };
+    chrome.storage.sync.get({intervalTime: 200}, function(items) {
+        var writers = {
+            not_found: []
+        };
+        var artists = {
+            not_found: []
+        };
 
-    var defs = [];
-    defs.push($.get("https://fantlab.ru/getautorstag/", {getautors: writersList.join(",")}, function(data) {
-        var ents = data.split(/,\s*/);
-        $.each(ents, function(index, val) {
-            if (val.startsWith("[")) {
-                var res = /\[autor=(\d+)\](.+)\[/.exec(val);
-                writers[res[2]] = res[1];
-            } else {
-                writers.not_found.push(val);
-            }
-        });
-    }));
-
-    var artists = {
-        not_found: []
-    };
-    $.each(artistsList, function(index, value) {
-        defs.push($.get("https://fantlab.ru/search-mini-art", {searchq: value}, function(data) {
-            var links = $(".search-result_left a", data);
-            if (links.length == 1) {
-                var res = /importStrArts\(\'(\d+)\'/.exec(links.attr("onClick"))[1];
-                artists[value] = res;
-            } else {
-                artists.not_found.push(value);
-            }
-        }));
-    });
-
-    $.when.apply($, defs).then(function( data, textStatus, jqXHR ) {
-        if (artists.not_found.length > 0 || writers.not_found.length > 0) {
-            var dlg = $("<div id='fantlab-dlg'/>");
-            if (writers.not_found.length > 0) {
-                dlg.append("<h1>Авторы:</h1>");
-                var wList = $("<ul/>");
-                $.each(writers.not_found, function (idx, value) {
-                    wList.append("<li><label for='aut" + idx + "'>" + value + "</label> <input type='text' id='aut" + idx + "' data='" + value + "'/>");
-                });
-                dlg.append(wList);
-            }
-            if (artists.not_found.length > 0) {
-                dlg.append("<h1>Художники:</h1>");
-                var aList = $("<ul/>");
-                $.each(artists.not_found, function (idx, value) {
-                    aList.append("<li><label for='art" + idx + "'>" + value +
-                                 " <input type='text' id='art" + idx +
-                                 "' size=7 data='" + value + "'/></label>");
-                });
-                dlg.append(aList);
-            }
-
-            dlg.dialog({
-                title: "Укажите id",
-                modal: true,
-                dialogClass: "no-close",
-                buttons: {
-                    "OK": function() {
-                        var auts = {};
-                        var arts = {};
-                        var valid = true;
-                        dlg.find("input").each(function(idx) {
-                            var val = $(this).val().trim();
-                            if (val.length > 0) {
-                                if ($(this)[0].id.startsWith("art")) {
-                                    arts[$(this).attr("data")] = val;
-                                } else {
-                                    auts[$(this).attr("data")] = val;
-                                }
-                            } else {
-                                valid = false;
-                            }
+        findWritersIds(writersList, writers)
+            .then(function() {
+                return findArtistsIds(artistsList, artists, Number(items.intervalTime));
+            })
+            .then(function() {
+                if (artists.not_found.length > 0 || writers.not_found.length > 0) {
+                    var dlg = $("<div id='fantlab-dlg'/>");
+                    if (writers.not_found.length > 0) {
+                        dlg.append("<h1>Авторы:</h1>");
+                        var wList = $("<ul/>");
+                        $.each(writers.not_found, function (idx, value) {
+                            wList.append("<li><label for='aut" + idx + "'>" + value + "</label> <input type='text' id='aut" + idx + "' data='" + value + "'/>");
                         });
-
-                        if (valid) {
-                            $.extend(writers, auts);
-                            $.extend(artists, arts);
-                            writers.not_found = [];
-                            artists.not_found = [];
-
-                            $(this).dialog("close");
-                            chrome.runtime.sendMessage({action: "fillComics", comics: comics, writers: writers, artists: artists});
-                        }
+                        dlg.append(wList);
                     }
+                    if (artists.not_found.length > 0) {
+                        dlg.append("<h1>Художники:</h1>");
+                        var aList = $("<ul/>");
+                        $.each(artists.not_found, function (idx, value) {
+                            aList.append("<li><label for='art" + idx + "'>" + value +
+                                         " <input type='text' id='art" + idx +
+                                         "' size=7 data='" + value + "'/></label>");
+                        });
+                        dlg.append(aList);
+                    }
+
+                    dlg.dialog({
+                        title: "Укажите id",
+                        modal: true,
+                        dialogClass: "no-close",
+                        buttons: {
+                            "OK": function() {
+                                var auts = {};
+                                var arts = {};
+                                var valid = true;
+                                dlg.find("input").each(function(idx) {
+                                    var val = $(this).val().trim();
+                                    if (val.length > 0) {
+                                        if ($(this)[0].id.startsWith("art")) {
+                                            arts[$(this).attr("data")] = val;
+                                        } else {
+                                            auts[$(this).attr("data")] = val;
+                                        }
+                                    } else {
+                                        valid = false;
+                                    }
+                                });
+
+                                if (valid) {
+                                    $.extend(writers, auts);
+                                    $.extend(artists, arts);
+                                    writers.not_found = [];
+                                    artists.not_found = [];
+
+                                    $(this).dialog("close");
+                                    chrome.runtime.sendMessage({action: "fillComics", comics: comics, writers: writers, artists: artists});
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    chrome.runtime.sendMessage({action: "fillComics", comics: comics, writers: writers, artists: artists});
                 }
             });
-        } else {
-            chrome.runtime.sendMessage({action: "fillComics", comics: comics, writers: writers, artists: artists});
-        }
     });
 }
 
