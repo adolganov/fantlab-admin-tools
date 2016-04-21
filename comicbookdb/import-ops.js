@@ -9,7 +9,7 @@ function parsePage(html) {
 
     comicsInfo.title = headline.nextAll(".page_subheadline").text().slice(1, -1);
 
-    var creatorsTable = headline.siblings("table").first().find("strong").first();
+    var creatorsTable = headline.siblings("table").find("tr td").eq(2).find("strong").first();
     comicsInfo = extractCreators(creatorsTable, comicsInfo);
     //cover date
     var dt = html.find(".page_link[href^='coverdate.php']").text();
