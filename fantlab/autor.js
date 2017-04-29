@@ -1,9 +1,9 @@
 $(function() {
-    $("tbody[id$='info']:not(#cycle_info, #mauthor_info) tr:has(a)").
+    $("tbody[id$='info']:not(#cycle_info, #mauthor_info, [id='conditional cycle_info']) tr:has(a)").
         prepend("<td><input type='checkbox' class='workCB'/></td>");
-    $("tbody#cycle_info tr, tbody#mauthor_info tr").prepend("<td/>");
+    $("tbody#cycle_info tr, tbody#mauthor_info tr, tbody[id='conditional cycle_info'] tr").prepend("<td/>");
     $("tbody[id$='info']").prev("tbody").find("td[colspan]").attr("colspan", 6);
-    $("tbody[id$='info']:not(#cycle_info, #mauthor_info) tr td[colspan]").attr("colspan", 6);
+    $("tbody[id$='info']:not(#cycle_info, #mauthor_info, [id='conditional cycle_info']) tr td[colspan]").attr("colspan", 6);
     $("tbody[id$='info'] tr:last").prepend("<td/>");
 
     $("a:contains(псевдонимы)").after(" | <a href='#' id='add-to-cycle'>добавить в цикл</a>");
